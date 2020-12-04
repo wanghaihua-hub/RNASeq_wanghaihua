@@ -16,7 +16,7 @@ done
 
 
 hisat2-build -p 10 CNU.scaffolds.fasta esteya_genome
-
+hisat2-build -p 10 GCA_002778215.1_ASM277821v1_genomic.fna  esteya_cbs_genome
 
 hisat2 -t -p 10 \
 -x /apps/users/user01/wanghhh/RNASeq/esteya_resin/reference/esteya_genome \
@@ -29,6 +29,25 @@ hisat2 -t -p 10 \
 --al-conc-gz ../alignment/B_1_paired_aligned.fastq.gz  \
 --summary-file ../alignment/B_1_summary.txt  \
 --met-file ../alignment/B_1_met.txt & 
+
+hisat2 -t -p 6 \
+-x /apps/users/user01/wanghhh/RNASeq/esteya_resin/reference_cbs/esteya_cbs_genome \
+-1 B_1_R1_val_1.fq.gz  \
+-2 B_1_R2_val_2.fq.gz \
+-S  ../alignment_cbs/B_1.sam \
+--un-gz ../alignment_cbs/B_1_unpaired_unaligned.fastq.gz \
+--al-gz ../alignment_cbs/B_1_unpaired_aligned.fastq.gz \
+--un-conc-gz ../alignment_cbs/B_1_paired_unaligned.fastq.gz \
+--al-conc-gz ../alignment_cbs/B_1_paired_aligned.fastq.gz  \
+--summary-file ../alignment_cbs/B_1_summary.txt  \
+--met-file ../alignment_cbs/B_1_met.txt & 
+
+
+
+
+
+
+
 
 
 
