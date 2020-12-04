@@ -1,0 +1,135 @@
+https://tiramisutes.github.io/2018/12/04/ref-RNA-seq.html
+
+
+fastqc rawdata/*.fq.gz -o fastqc -t 3
+
+trim_galore -q 25 --phred33 --stringency 3 --length 25  --paired B_1_R1.fq.gz B_1_R2.fq.gz --gzip -o ../cleandata_2
+
+ls *.gz|cut -d"_" -f 1,2 |sort -u |while read id;do
+trim_galore -q 25 --phred33 --stringency 3 --length 25 \
+--paired ${id}_R1.fq.gz    ${id}_R2.fq.gz \
+--gzip \
+-o ../cleandata
+done
+
+ fastqc cleandata/*_paired_*.fq.gz -o fastq_trim -t 3 
+
+
+hisat2-build -p 10 CNU.scaffolds.fasta esteya_genome
+
+
+hisat2 -t -p 10 \
+-x /apps/users/user01/wanghhh/RNASeq/esteya_resin/reference/esteya_genome \
+-1 B_1_R1_val_1.fq.gz  \
+-2 B_1_R2_val_2.fq.gz \
+-S  ../alignment/B_1.sam \
+--un-gz ../alignment/B_1_unpaired_unaligned.fastq.gz \
+--al-gz ../alignment/B_1_unpaired_aligned.fastq.gz \
+--un-conc-gz ../alignment/B_1_paired_unaligned.fastq.gz \
+--al-conc-gz ../alignment/B_1_paired_aligned.fastq.gz  \
+--summary-file ../alignment/B_1_summary.txt  \
+--met-file ../alignment/B_1_met.txt & 
+
+
+
+nohup ls *.gz|cut -d"_" -f 1,2 |sort -u |while read id;do
+hisat2 -t -p 6 \
+-x /apps/users/user01/wanghhh/RNASeq/esteya_resin/reference/esteya_genome \
+-1 ${id}_R1_val_1.fq.gz \
+-2 ${id}_R2_val_2.fq.gz \
+-S ../alignment/${id}.sam
+--un ../alignment/${id}_unpaired_unaligned.fastq.gz
+--al ../alignment/${id}_unpaired_aligned.fastq.gz
+--un-conc ../alignment/${id}_paired_unaligned.fastq.gz
+--al-conc ../alignment/${id}_paired_aligned.fastq.gz
+done &
+
+
+#star build ref
+STAR --runMode genomeGenerate \
+--genomeDir /apps/users/user01/wanghhh/RNASeq/esteya_resin/reference_star \
+--genomeFastaFiles /apps/users/user01/wanghhh/RNASeq/esteya_resin/reference_star/CNU.scaffolds.fasta \
+--sjdbGTFfile /apps/users/user01/wanghhh/RNASeq/esteya_resin/reference_star/CNU.final.gtf  \
+--sjdbOverhang 149 --runThreadN 5
+
+#star alignment
+
+STAR --runThreadN 5 --genomeDir /apps/users/user01/wanghhh/RNASeq/esteya_resin/reference_star \
+--readFilesCommand zcat \
+--readFilesIn cleandata/B_1_R1_val_1.fq.gz \
+cleandata/B_1_R2_val_2.fq.gz \
+--outFileNamePrefix alignment_star/B_1 \
+--outReadsUnmapped alignment_star/B_1_unmapped.fastq.gz \
+--outSAMtype BAM SortedByCoordinate \
+--outBAMsortingThreadN 5 \
+--quantMode TranscriptomeSAM GeneCounts
+
+
+--outSAMunmapped alignment_star/B_1_unmapped \
+
+
+STAR --runThreadN 5 --genomeDir /apps/users/user01/wanghhh/RNASeq/esteya_resin/reference_star  \
+--readFilesIn cleandata/10335.6.156671.AGTTCC.cleandata.fastq \
+--outFileNamePrefix align_out/10335.6.156671.AGTTCC \
+--outSAMtype BAM SortedByCoordinate \
+--outBAMsortingThreadN 3 \
+--quantMode TranscriptomeSAM GeneCounts
+
+
+ B_1_R1_val_1.fq.gz  \
+-2 B_1_R2_val_2.fq.gz
+
+
+
+
+
+
+
+
+
+trimmomatic PE -threads 3 \
+B_1_R1.fq.gz     B_1_R2.fq.gz \
+../cleandata_1/B_1.cleandata_paired_R1.fq.gz \
+../cleandata_1/B_1.cleandata_unpaired_R1.fq.gz \
+../cleandata_1/B_1.cleandata_paired_R2.fq.gz  \
+../cleandata_1/B_1.cleandata_unpaired_R2.fq.gz  \
+ILLUMINACLIP:/apps/users/user01/wanghhh/software/anaconda/anaconda3/envs/RNASeq/share/trimmomatic-0.39-1/adapters/TruSeq3-PE.fa:2:30:10 \
+-threads 6 -phred33 \
+LEADING:5 TRAILING:5 \
+ SLIDINGWINDOW:5:15  MINLEN:25 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ls *.gz|cut -d"_" -f 1,2 |sort -u |while read id;do
+trimmomatic PE -threads 3 \
+${id}_R1.fq.gz    ${id}_R2.fq.gz \
+../cleandata/${id}.cleandata_paired_R1.fq.gz \
+../cleandata/${id}.cleandata_unpaired_R1.fq.gz \
+../cleandata/${id}.cleandata_paired_R2.fq.gz  \
+../cleandata/${id}.cleandata_unpaired_R2.fq.gz  \
+ILLUMINACLIP:/apps/users/user01/wanghhh/software/anaconda/anaconda3/envs/RNASeq/share/trimmomatic-0.39-1/adapters/TruSeq3-PE.fa:2:30:10 \
+-threads 6 -phred33 \
+LEADING:20 TRAILING:20 \
+ SLIDINGWINDOW:5:20  MINLEN:25 
+done
+
+
+
+(NexteraPE-PE.fa  TruSeq2-PE.fa  TruSeq2-SE.fa  TruSeq3-PE-2.fa  TruSeq3-PE.fa  TruSeq3-SE.fa)
+
+ fastqc cleandata/*_paired_*.fq.gz -o fastq_trim -t 3 
+
+
